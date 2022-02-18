@@ -1,9 +1,34 @@
+import os
+import json
+import threading
+
 import pygame
 from random import randint
 import time
 global is_paused
 is_paused = True
 
+if not os.path.exists("save.json"):
+  with open('save.json','x') as f:
+    dictionary = {
+      "test" : 1
+    }
+    json.dump(dictionary,f)
+    f.close()
+with open('save.json','r') as f:
+  global save
+  save = json.load(f)
+  f.close()
+
+def saving():
+  while True:
+    with open('save.json','w') as f:
+      json.dump(save,f)
+      f.close()
+      time.sleep(1)
+
+t1 = threading.Thread(target=saving)
+t1.start()
 
 class Box:
 
@@ -18,13 +43,13 @@ class Box:
   
   def collisions(self, screen):
     self.key = pygame.key.get_pressed()
-    if self.key[pygame.K_a]:
+    if self.key[pygame.K_a] or self.key[pygame.K_LEFT]:
       self.x -= self.vec
-    if self.key[pygame.K_d]:
+    if self.key[pygame.K_d] or self.key[pygame.K_RIGHT]:
       self.x += self.vec
-    if self.key[pygame.K_w]:
+    if self.key[pygame.K_w] or self.key[pygame.K_UP]:
       self.y -= self.vec
-    if self.key[pygame.K_s]:
+    if self.key[pygame.K_s] or self.key[pygame.K_DOWN]:
       self.y += self.vec
     if self.key[pygame.K_F11]:
       pygame.display.toggle_fullscreen()
@@ -49,6 +74,17 @@ class Box:
   def show(self,screen):
     if self.x<screen.get_width() and self.y<screen.get_height() and self.x > -self.size and self.y > -self.size:
       self.this = pygame.draw.rect(screen, 255,(self.x,self.y,self.size,self.size))
+
+class bullet:
+  def __init__(self,x,y,angle,size):
+    self.x = x
+    self.y = y
+    self.angle = angle
+    self.size = size
+  def collisions(self,screen):
+    print("a")
+  def show(self,screen):
+    print("a")
 
 class Enemy:
   def __init__(self,x,y,size):
@@ -85,7 +121,8 @@ class pause:
     if self.this.colliderect(collider):
       self.this = pygame.draw.rect(screen, [255,255,255],(self.x,self.y,100,100))
       if self.key[pygame.K_RETURN]:
-        print("wow, something happened")
+        save["test"] +=1
+        
     else:
       self.this = pygame.draw.rect(screen, [240,240,240],(self.x,self.y,100,100))
 
